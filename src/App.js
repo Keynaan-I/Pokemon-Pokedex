@@ -51,9 +51,8 @@ const PokemonTeamBuilder = () => {
     dark: darkTypeImage,
     fairy: fairyTypeImage,
   };
-
+  // List/variable to get what types are effective on others
   const getTypeEffectiveness = (type) => {
-   //What types are effective on others
     const typeChart = {
       normal: { effective: [], weakness: ['fighting'], resistance: [], immunity: ['ghost'] },
       fighting: { effective: ['normal', 'dark','steel', 'rock', 'ice'], weakness: ['flying', 'psychic', 'fairy'], resistance: ['rock', 'bug', 'dark'], immunity: [] },
@@ -78,7 +77,8 @@ const PokemonTeamBuilder = () => {
     return typeChart[type] || { effective:[], weakness: [], resistance: [], immunity: [] };
   };
 
-  //Function that finds what type is super effective on a pokemon
+  //Function that finds what type is super effective on a pokemon, returns 1 if neutral, 2 if super effective, 
+  //0.5 or 0.25 if not very effective and 0 if its immune.
   const getTypeMatchup = (types, type2) => {
     var effectiveness = 1
     //If the pokemon only has 1 type
@@ -150,23 +150,28 @@ const PokemonTeamBuilder = () => {
       });
   }, []);
 
-
-  const closeDetails = () => {    
-    setSelectedPokemon(null)
-  };
-
+  //When a pokemon is clicked variable is set to that pokemon and opens detailed page
   const handlePokemonClick = async (pokemon) => {
     setSelectedPokemon(pokemon);
   };
 
+
+  //Closes detailed page and sets the selected pokemon to null
+  const closeDetails = () => {    
+    setSelectedPokemon(null)
+  };
+
+  //Sets search by name filter
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
+  //Sets type filter
   const handleTypeFilterChange = (e) => {
     setSelectedTypeFilter(e.target.value);
   };
 
+  //Checks type name for filter and checks pokemon name to filter
   const filteredPokemon = pokemonList.filter((pokemon) => {
     const matchesType = !selectedTypeFilter || pokemon.types.some((type) => type.type.name === selectedTypeFilter);
     const matchesSearchTerm = pokemon.name.includes(searchTerm.toLowerCase());
@@ -174,7 +179,7 @@ const PokemonTeamBuilder = () => {
   });
 
   
-
+  //handles sorting columns by ascending or descending
   const handleSort = (columnName) => {
     if (columnName === sortColumn) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -184,6 +189,7 @@ const PokemonTeamBuilder = () => {
     }
   };
 
+  //Sorts the pokedex number, name, type and Stats column by ascending or descending
   const sortedPokemon = filteredPokemon.sort((a, b) => {
     if (sortColumn === 'Pokedex number') {
       const idA = parseInt(a.id);
@@ -203,6 +209,8 @@ const PokemonTeamBuilder = () => {
     return 0;
   });
 
+  //Changes icon from up to down depending on if the 
+  //coloumn is sorted by ascending or descending
   const renderSortIcon = (columnName) => {
     if (sortColumn === columnName) {
       return sortDirection === 'asc' ? '▲' : '▼';
@@ -220,9 +228,15 @@ const PokemonTeamBuilder = () => {
       <body>
       <h1>Pokedex</h1>
       
-      {/* If a pokemon has been selected open the detailed view, otherwise show the table of all pokemon */}
+      {/* If a pokemon has been selected it opens the detailed view, otherwise if the selectedPokemon Var is null
+      show the table of all pokemon.
+
+      If the project was slightly bigger/more complicated I would use components for each page to easily seperate
+      each page and their functions.
+      */}
+
       {selectedPokemon ? (<div class='details'>
-        {/* Detail page -------------------------------------------------- */}
+        {/* Detail page (when a pokemon is clicked) -------------------------------------------------- */}
         <button onClick={closeDetails} className='closeDetails'>Return to search table</button>
         
         <span className='detailedSpan'>
@@ -330,12 +344,12 @@ const PokemonTeamBuilder = () => {
               </tr>
             </table>
             <br></br>
-            <br></br>
+            <h2>More information</h2>
             More information on this pokemon can be found at <a href={"https://pokemondb.net/pokedex/"+ selectedPokemon.name }> here</a>
          </span>
 
       </div>) : (
-        // This is the page with all the pokemon -------------------------------------------------------------
+        // This is the page with all the pokemon (Intial page)-------------------------------------------------------------
       <div>
       <h1>Search and click on pokemon for more details</h1>
 
@@ -369,10 +383,12 @@ const PokemonTeamBuilder = () => {
           <option value="dark">Dark</option>
           <option value="fairy">Fairy</option>
         </select>
-
+        
+        {/* The pokemon table */}
         <div className="pokemon-list">
           <h3>Clcik on the coloumn headers to sort from acending to descending or vise versa</h3>
           <table>
+            {/* Table headers */}
             <thead>
               <tr>
                 <th onClick={() => handleSort('Pokedex number')}> 
@@ -394,6 +410,8 @@ const PokemonTeamBuilder = () => {
                 </th>
               </tr>
             </thead>
+
+            {/* Table body / pokemon entries */}
             <tbody>
             {sortedPokemon.map((pokemon) => (
             
