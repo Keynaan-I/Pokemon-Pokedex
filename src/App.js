@@ -31,6 +31,26 @@ const PokemonTeamBuilder = () => {
   const [sortDirection, setSortDirection] = useState('asc');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState('');
 
+  //Gets all the pokemon from the pokemon api which has their data, like images, types, abilities etc.
+  useEffect(() => {
+    const fetchPokemonDetails = async (pokemonName) => {
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
+      const data = await response.json();
+      return data;
+    };
+
+    fetch('https://pokeapi.co/api/v2/pokemon?limit=2000')
+      .then(async (response) => await response.json())
+      .then(async (data) => {
+        const pokemonDetailsPromises = data.results.map(async (pokemon) => {
+          const details = await fetchPokemonDetails(pokemon.name);
+          return details;
+        });
+        const pokemonDetails = await Promise.all(pokemonDetailsPromises);
+        setPokemonList(pokemonDetails);
+      });
+  }, []);
+
   const typeImages = {
     normal: normalTypeImage,
     fighting: fightingTypeImage,
@@ -130,25 +150,29 @@ const PokemonTeamBuilder = () => {
   }
 
 
-  //Gets all the pokemon from the pokemon api which has their data, like images, types, abilities etc.
-  useEffect(() => {
-    const fetchPokemonDetails = async (pokemonName) => {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
-      const data = await response.json();
-      return data;
-    };
+  //Returns a string of whether something is super effective, not very effetice, etc.
+  const effectiveString = (types, type) => {
+    const number=getTypeMatchup(types,type)
+    if (number === 0.25){
+      return 'veryVeryNotEffective'
+    }
+    else if (number === 0.5) {
+      return 'notVeryEffective'
+    }
+    else if (number === 1) {
+      return 'neutral'
+    }
+    else if (number === 2) {
+      return 'superEffective'
+    }
+    else if (number === 4) {
+      return 'superDuperEffective'      
+    }
+    else{
+      return 'immune'
+    }
 
-     fetch('https://pokeapi.co/api/v2/pokemon?limit=2000')
-      .then((response) => response.json())
-      .then(async (data) => {
-        const pokemonDetailsPromises = data.results.map(async (pokemon) => {
-          const details = await fetchPokemonDetails(pokemon.name);
-          return details;
-        });
-        const pokemonDetails = await Promise.all(pokemonDetailsPromises);
-        setPokemonList(pokemonDetails);
-      });
-  }, []);
+  }
 
   //When a pokemon is clicked variable is set to that pokemon and opens detailed page
   const handlePokemonClick = async (pokemon) => {
@@ -285,7 +309,7 @@ const PokemonTeamBuilder = () => {
         aka what types are super effective or not very effective on this pokemon
         <br></br>
         <br></br>
-        x2 = Super effective damage
+        x2 and x4 = Super effective damage
         <br></br>
         x1 = Neutral damage
         <br></br>
@@ -296,7 +320,7 @@ const PokemonTeamBuilder = () => {
         <br></br>
             
             {/* This table can use loops but due to time copy and paste was quicker to implement */}
-            <table>
+            <table className='defensive stat table'>
               <th>Normal</th>
               <th>Fighting</th>
               <th>Flying</th>
@@ -305,12 +329,25 @@ const PokemonTeamBuilder = () => {
               <th>Rock</th>
               
               <tr>
-                <td>x{getTypeMatchup(selectedPokemon.types,"normal")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"fighting")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"flying")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"poison")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"ground")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"rock")}</td>        
+                {/* Classname changes depending on if its effective or not so background can reflect whether is effectiive or not */}
+                <td className={effectiveString(selectedPokemon.types,'normal')}>
+                  x{getTypeMatchup(selectedPokemon.types,"normal")}
+                </td>
+                <td className={effectiveString(selectedPokemon.types,'fighting')}>
+                  x{getTypeMatchup(selectedPokemon.types,"fighting")}
+                </td>
+                <td className={effectiveString(selectedPokemon.types,'flying')}>
+                  x{getTypeMatchup(selectedPokemon.types,"flying")}
+                </td>
+                <td className={effectiveString(selectedPokemon.types,'poison')}>
+                  x{getTypeMatchup(selectedPokemon.types,"poison")}
+                </td>
+                <td className={effectiveString(selectedPokemon.types,'ground')}>
+                  x{getTypeMatchup(selectedPokemon.types,"ground")}
+                </td>
+                <td className={effectiveString(selectedPokemon.types,'rock')}>
+                  x{getTypeMatchup(selectedPokemon.types,"rock")}
+                </td>      
               </tr>
 
               <th>Bug</th>
@@ -319,13 +356,26 @@ const PokemonTeamBuilder = () => {
               <th>Fire</th>
               <th>Water</th>
               <th>Grass</th>
+
               <tr>
-                <td>x{getTypeMatchup(selectedPokemon.types,"bug")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"ghost")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"steel")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"fire")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"water")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"grass")}</td>
+                <td className={effectiveString(selectedPokemon.types,'bug')}>
+                  x{getTypeMatchup(selectedPokemon.types,"bug")}
+                </td>
+                <td className={effectiveString(selectedPokemon.types,'ghost')}>
+                  x{getTypeMatchup(selectedPokemon.types,"ghost")}
+                </td>
+                <td className={effectiveString(selectedPokemon.types,'steel')}>
+                  x{getTypeMatchup(selectedPokemon.types,"steel")}
+                </td>
+                <td className={effectiveString(selectedPokemon.types,'fire')}>
+                  x{getTypeMatchup(selectedPokemon.types,"fire")}
+                </td>
+                <td className={effectiveString(selectedPokemon.types,'water')}>
+                  x{getTypeMatchup(selectedPokemon.types,"water")}
+                </td>
+                <td className={effectiveString(selectedPokemon.types,'grass')}>
+                  x{getTypeMatchup(selectedPokemon.types,"grass")}
+                </td>
               </tr>
               <th>Electric</th>
               <th>Psychic</th>
@@ -335,17 +385,29 @@ const PokemonTeamBuilder = () => {
               <th>Fairy</th>
 
               <tr>
-              <td>x{getTypeMatchup(selectedPokemon.types,"electric")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"psychic")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"ice")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"dragon")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"dark")}</td>
-                <td>x{getTypeMatchup(selectedPokemon.types,"fairy")}</td>
+              <td className={effectiveString(selectedPokemon.types,'electric')}>
+                x{getTypeMatchup(selectedPokemon.types,"electric")}
+              </td>
+              <td className={effectiveString(selectedPokemon.types,'psychic')}>
+                x{getTypeMatchup(selectedPokemon.types,"psychic")}
+              </td>
+              <td className={effectiveString(selectedPokemon.types,'ice')}>
+                x{getTypeMatchup(selectedPokemon.types,"ice")}
+              </td>
+              <td className={effectiveString(selectedPokemon.types,'dragon')}>
+                x{getTypeMatchup(selectedPokemon.types,"dragon")}
+              </td>
+              <td className={effectiveString(selectedPokemon.types,'dark')}>
+                x{getTypeMatchup(selectedPokemon.types,"dark")}
+              </td>
+              <td className={effectiveString(selectedPokemon.types,'fairy')}>
+                x{getTypeMatchup(selectedPokemon.types,"fairy")}
+              </td>
               </tr>
             </table>
             <br></br>
-            <h2>More information</h2>
-            More information on this pokemon can be found at <a href={"https://pokemondb.net/pokedex/"+ selectedPokemon.name }> here</a>
+            <h2>Even more information</h2>
+            For even more information on this pokemon can be found at <a href={"https://pokemondb.net/pokedex/"+ selectedPokemon.name} target="_blank" rel="noreferrer"> here</a>
          </span>
 
       </div>) : (
