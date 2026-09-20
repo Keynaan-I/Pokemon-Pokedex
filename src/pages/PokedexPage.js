@@ -35,50 +35,53 @@ const PokedexPage = () => {
   const [sortDirection, setSortDirection] = useState('asc');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState('');
   
-  const MAX_POKEMON_TO_LOAD = 1025; // Fallback to 1025 if the count is not available
-//Gets all the pokemon from the pokemon api which has their data, like images, types, abilities etc.
-useEffect(() => {
-  // Prevent state updates after the component unmounts.
+  const NATIONAL_DEX_ID = 1;
+  const MAX_POKEMON_ID = 10000;
+
+  useEffect(() => {
     let cancelled = false;
 
-    // Fetch the detailed data for a single Pokémon by name.
-    const fetchPokemonDetails = async (pokemonName) => {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
+    const fetchPokemonDetails = async (pokemonId) => {
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch ${pokemonName}: ${response.status}`);
+        throw new Error(`Failed to fetch Pokémon ID ${pokemonId}: ${response.status}`);
       }
 
       return response.json();
     };
 
-    // Fetch the Pokémon list, then fetch each Pokémon's full data in batches.
     const loadPokemon = async () => {
       try {
-        // Get the list of Pokémon names/URLs.
-        const listResponse = await fetch(
-          `https://pokeapi.co/api/v2/pokemon?limit=${MAX_POKEMON_TO_LOAD}`
+        const dexResponse = await fetch(
+          `https://pokeapi.co/api/v2/pokedex/${NATIONAL_DEX_ID}`
         );
 
-        if (!listResponse.ok) {
-          throw new Error(`Failed to fetch Pokémon list: ${listResponse.status}`);
+        if (!dexResponse.ok) {
+          throw new Error(`Failed to fetch National Pokédex: ${dexResponse.status}`);
         }
 
-        const listData = await listResponse.json();
+        const dexData = await dexResponse.json();
 
-        // Process each chunk separately to avoid overwhelming the browser and API.
-        const batchSize = 1025;
+        const pokemonIds = (dexData.pokemon_entries || [])
+          .map((entry) => {
+            const speciesUrl = entry?.pokemon_species?.url;
+            if (!speciesUrl) return null;
+            return Number(speciesUrl.split('/').filter(Boolean).pop());
+          })
+          .filter((id) => id && id > 0 && id < MAX_POKEMON_ID)
+          .sort((a, b) => a - b);
+
+        const batchSize = 25;
         const results = [];
 
-        for (let i = 0; i < listData.results.length; i += batchSize) {
-          const batch = listData.results.slice(i, i + batchSize);
+        for (let i = 0; i < pokemonIds.length; i += batchSize) {
+          const batch = pokemonIds.slice(i, i + batchSize);
 
-          // Promise.allSettled prevents one failed fetch from breaking the whole load.
           const batchResults = await Promise.allSettled(
-            batch.map(({ name }) => fetchPokemonDetails(name))
+            batch.map((id) => fetchPokemonDetails(id))
           );
 
-          // Only keep successful fetches.
           results.push(
             ...batchResults
               .filter((result) => result.status === 'fulfilled')
@@ -86,14 +89,12 @@ useEffect(() => {
           );
         }
 
-        // Only update state if the component is still mounted.
         if (!cancelled) {
           setPokemonList(results);
         }
       } catch (error) {
         console.error('Error loading Pokémon:', error);
 
-        // If fetch fails, keep the UI stable instead of crashing.
         if (!cancelled) {
           setPokemonList([]);
         }
@@ -102,7 +103,6 @@ useEffect(() => {
 
     loadPokemon();
 
-    // Cleanup function: stops updates if the page unmounts while data is still loading.
     return () => {
       cancelled = true;
     };
@@ -230,20 +230,6 @@ useEffect(() => {
     }
 
   }
-// ----------------------- Team functions??
-  // const handlePokemonClick = async (pokemon) => {
-  //   if (!selectedPokemon.includes(pokemon)) {
-  //     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon}`);
-  //     const data = await response.json();
-  //     setSelectedPokemon([...selectedPokemon, data]);
-  //   }
-  // };
-
-  // const handleRemovePokemon = (pokemon) => {
-  //   const updatedTeam = selectedPokemon.filter((p) => p !== pokemon);
-  //   setSelectedPokemon(updatedTeam);
-  // };
-// -------------------------------------------------
 
   //When a pokemon is clicked variable is set to that pokemon and opens detailed page
   const handlePokemonClick = async (pokemon) => {
@@ -319,7 +305,7 @@ useEffect(() => {
   
 
   return (
-    <div className='WholePage'>
+    <div className='pokedex-page-content'>
       <body>
       <h1>Pokedex</h1>
       
@@ -545,6 +531,7 @@ useEffect(() => {
             </thead>
 
             {/* Table body / pokemon entries */}
+            
             <tbody>
             {sortedPokemon.map((pokemon) => (
               <tr key={pokemon.name} className="pokemon-item" onClick={() => handlePokemonClick(pokemon)}>

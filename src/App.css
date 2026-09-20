@@ -1,3 +1,7 @@
+* {
+    padding:0;
+    margin:0;
+}
 
 body {
   font-family: Arial, sans-serif;
@@ -21,16 +25,16 @@ h2{
   display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    height: 50px;
+    height: 100vh;
 }
 div {
-  margin: 20px;
+  margin: 0px;
   font-size: 18px;
 }
 .detailedSpan{
   border: 5px solid black; 
   margin: 5px;
-  margin-top: 50px;
+  margin-top: 0px;
    
 }
 .closeDetails{
@@ -99,21 +103,46 @@ td:hover {
 
 .WholePage{
   background-image: url(
-"https://www.hdwallpapers.in/download/pokemon_in_yellow_background_hd_yellow-1366x768.jpg"
+"https://images5.alphacoders.com/140/thumb-1920-1406708.jpg"
     );
     background-size: contain;
     height: max-content;
     font-size: 50px;
-    margin-top: -70px;
+    /* margin-top: -70px; */
     position: center;
     background-repeat: repeat
 }
 .nav-buttons {
   display: flex;
-  justify-content: left;
-  /* padding-left: 20px;
-  margin-top: 20px; */
+  justify-content: center;
+  padding: 10px;
 }
+.nav-button {
+  border: 2px solid #000000;
+  padding: 10px 20px;
+  margin: 0 5px;
+  cursor: pointer;
+  font-size: large;
+}
+
+.home-page-content {
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; */
+  /* justify-content: center; */
+  height: 100vh;
+  text-align: center;
+}
+.pokedex-page-content{
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; */
+  /* justify-content: center; */
+  height: 100%;
+  text-align: center;
+}
+
+
 #root{
   background-color: #ffcc1c;
 }
