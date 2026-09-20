@@ -22,8 +22,8 @@ const App = () => {
   return (
     <div className="WholePage">
       <header>
-        <h1>Pokémon Hub</h1>
-        <nav>
+        <h1>Key's Pokemon hub </h1>
+        <nav className="nav-buttons">
           <button onClick={() => setCurrentPage('home')}>Home</button>
           <button onClick={() => setCurrentPage('pokedex')}>Pokedex</button>
           <button onClick={() => setCurrentPage('teambuilder')}>Team Builder</button>

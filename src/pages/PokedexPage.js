@@ -34,25 +34,78 @@ const PokedexPage = () => {
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState('');
+  
+  const MAX_POKEMON_TO_LOAD = 1025; // Fallback to 1025 if the count is not available
+//Gets all the pokemon from the pokemon api which has their data, like images, types, abilities etc.
+useEffect(() => {
+  // Prevent state updates after the component unmounts.
+    let cancelled = false;
 
-  //Gets all the pokemon from the pokemon api which has their data, like images, types, abilities etc.
-  useEffect(() => {
+    // Fetch the detailed data for a single Pokémon by name.
     const fetchPokemonDetails = async (pokemonName) => {
       const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
-      const data = await response.json();
-      return data;
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${pokemonName}: ${response.status}`);
+      }
+
+      return response.json();
     };
 
-    fetch('https://pokeapi.co/api/v2/pokemon?limit=2000')
-      .then(async (response) => await response.json())
-      .then(async (data) => {
-        const pokemonDetailsPromises = data.results.map(async (pokemon) => {
-          const details = await fetchPokemonDetails(pokemon.name);
-          return details;
-        });
-        const pokemonDetails = await Promise.all(pokemonDetailsPromises);
-        setPokemonList(pokemonDetails);
-      });
+    // Fetch the Pokémon list, then fetch each Pokémon's full data in batches.
+    const loadPokemon = async () => {
+      try {
+        // Get the list of Pokémon names/URLs.
+        const listResponse = await fetch(
+          `https://pokeapi.co/api/v2/pokemon?limit=${MAX_POKEMON_TO_LOAD}`
+        );
+
+        if (!listResponse.ok) {
+          throw new Error(`Failed to fetch Pokémon list: ${listResponse.status}`);
+        }
+
+        const listData = await listResponse.json();
+
+        // Process each chunk separately to avoid overwhelming the browser and API.
+        const batchSize = 1025;
+        const results = [];
+
+        for (let i = 0; i < listData.results.length; i += batchSize) {
+          const batch = listData.results.slice(i, i + batchSize);
+
+          // Promise.allSettled prevents one failed fetch from breaking the whole load.
+          const batchResults = await Promise.allSettled(
+            batch.map(({ name }) => fetchPokemonDetails(name))
+          );
+
+          // Only keep successful fetches.
+          results.push(
+            ...batchResults
+              .filter((result) => result.status === 'fulfilled')
+              .map((result) => result.value)
+          );
+        }
+
+        // Only update state if the component is still mounted.
+        if (!cancelled) {
+          setPokemonList(results);
+        }
+      } catch (error) {
+        console.error('Error loading Pokémon:', error);
+
+        // If fetch fails, keep the UI stable instead of crashing.
+        if (!cancelled) {
+          setPokemonList([]);
+        }
+      }
+    };
+
+    loadPokemon();
+
+    // Cleanup function: stops updates if the page unmounts while data is still loading.
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const typeImages = {
@@ -494,8 +547,6 @@ const PokedexPage = () => {
             {/* Table body / pokemon entries */}
             <tbody>
             {sortedPokemon.map((pokemon) => (
-            
-            
               <tr key={pokemon.name} className="pokemon-item" onClick={() => handlePokemonClick(pokemon)}>
               <td>{pokemon.id}</td>
               <td>

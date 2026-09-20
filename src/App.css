@@ -47,6 +47,10 @@ div {
   height: 125px;
   width: 125px;
 }
+.filter-header{
+  font-size: large;
+  padding-left: 20px;
+}
 
 .typeFilter{
   font-size: large;
@@ -55,6 +59,7 @@ div {
 .nameFilter{
   font-size: large;
   height: 30px;
+  /* padding-left: 20px; */
 }
 
 
@@ -100,9 +105,14 @@ td:hover {
     height: max-content;
     font-size: 50px;
     margin-top: -70px;
-    margin-right: -20px;
-    margin-left: -20px;
+    position: center;
     background-repeat: repeat
+}
+.nav-buttons {
+  display: flex;
+  justify-content: left;
+  /* padding-left: 20px;
+  margin-top: 20px; */
 }
 #root{
   background-color: #ffcc1c;
