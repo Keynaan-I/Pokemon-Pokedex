@@ -1,6 +1,6 @@
 * {
-    padding:0;
-    margin:0;
+    padding: 0;
+    margin: 0;
 }
 
 body {
@@ -35,16 +35,22 @@ div {
   border: 5px solid black; 
   margin: 5px;
   margin-top: 0px;
+  position: relative;
+  content: center;
    
 }
 .closeDetails{
- margin-top: 50px;
+ margin-top: 0px;
  font-size: larger;
 }
 
 .pokemon-list {
   height: fit-content;
   width: fit-content;
+  position: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: 10px;
 }
 
 .tableImages{
@@ -63,7 +69,45 @@ div {
 .nameFilter{
   font-size: large;
   height: 30px;
-  /* padding-left: 20px; */
+  width: 300px;
+  box-sizing: border-box;
+}
+
+.name-search-dropdown {
+  margin-top: 8px;
+  width: 300px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  padding: 4px 0;
+  box-sizing: border-box;
+}
+
+.name-search-dropdown-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.name-search-dropdown-button img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.name-search-empty {
+  padding: 8px 10px;
+  color: #666;
 }
 
 
@@ -72,7 +116,9 @@ table {
   border-collapse: collapse;
   margin-top: 0px;
   border: 3px solid #000000;
+  position: left;
   height: fit-content;
+  position: center;
 }
 
 th, td {
@@ -144,7 +190,7 @@ td:hover {
 
 
 #root{
-  background-color: #ffcc1c;
+  background-color: #e3dbc6;
 }
 
 .superDuperEffective{
@@ -163,6 +209,318 @@ td:hover {
 .immune{
   background-color: rgb(173, 172, 172);
 }
+
+.loading-container {
+  display: flex;
+  justify-content: top=center;
+  align-items: right=center;
+  padding: 20px 0 10px;
+  height: 100vh;
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #04070b;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.form-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.form-tab,
+.active-form-tab {
+  border: 1px solid #d0d7de;
+  background: #f6f8fa;
+  color: #24292f;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.active-form-tab {
+  background: #2f80ed;
+  color: white;
+  border-color: #2f80ed;
+}
+
+.form-tab:hover {
+  background: #eaf3ff;
+}
+
+.Teambuilder-page-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.team-builder-layout {
+  width: min(1200px, calc(100% - 32px));
+  display: flex;
+  justify-content: center;
+  align-items: flex-center;
+  gap: 24px;
+  margin: 20px auto;
+}
+
+.filters-column {
+  flex: 0 0 380px;
+  min-width: 260px;
+}
+
+.team-panel {
+  width: 420px;
+  background: #d5ca9b;
+  border: 1px solid #d6ceab;
+  border-radius: 12px;
+  padding: 12px;
+  box-sizing: border-box;
+  box-shadow: inset 5px 0 5px -5px;
+  margin: 0 auto;
+  text-align: center;
+  height: 265px;
+}
+
+.team-grid {
+  display: grid;
+  gap: 10px;
+  justify-content: center;
+  width: 340px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.team-slot-button {
+  width: 110%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  border: 2px dashed #b9b9b9;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #555;
+  padding: 0;
+}
+
+.team-slot-button.filled {
+  border-style: solid;
+  border-color: #d8d8d8;
+  background: #eef3ff;
+  overflow: hidden;
+}
+
+.team-slot-button.filled img {
+  width: 120%;
+  height: 120%;
+  object-fit: contain;
+}
+
+.team-slot-button.empty {
+  cursor: default;
+}
+
+.team-slot-button.empty img {
+  width: 75%;
+  height: 75%;
+  object-fit: contain;
+}
+
+.team-add-button {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: #2d6cdf;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.team-add-button:hover {
+  background: #1a4fb5;
+}
+
+/* Detailed Team Breakdown styling */
+.team-breakdown-section {
+  max-width: 1200px;
+  margin: 32px auto 0;
+  padding: 0 16px 24px;
+  box-sizing: border-box;
+}
+
+.team-breakdown-section h2 {
+  margin-bottom: 16px;
+}
+
+.team-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.team-breakdown-card {
+  background: #f3efe3;
+  border: 1px solid #d9cda6;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.breakdown-table th,
+.breakdown-table td {
+  border: 1px solid #c9c9c9;
+  padding: 8px 10px;
+  text-align: center;
+  word-break: break-word;
+  
+
+}
+
+.breakdown-table th {
+  background: #eae1c4;
+}
+
+.team-breakdown-empty {
+  margin-top: 10px;
+  color: #444;
+}
+
+.move-category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 14px;
+}
+
+.move-category-tab {
+  border: 1px solid #c7b98d;
+  background: #f7f1df;
+  color: #3a2d18;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.move-category-tab.active {
+  background: #2d6cdf;
+  border-color: #2d6cdf;
+  color: #fff;
+}
+
+.notable-moves-table td {
+  vertical-align: middle;
+}
+
+.move-pokemon-sprites {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+}
+
+.move-pokemon-sprite {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d7d7d7;
+  border-radius: 10px;
+  background: #fff;
+  padding: 0;
+  cursor: default;
+}
+
+.move-pokemon-sprite img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.type-badge-icon {
+  width: 70px;
+  object-fit: left;
+}
+
+.speed-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.speed-number {
+  min-width: 42px;
+  font-weight: 700;
+}
+
+.speed-bar-track {
+  flex: 1;
+  min-width: 80px;
+  height: 12px;
+  background: #e8e8e8;
+  border: 1px solid #cdcdcd;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.speed-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+
+@media (max-width: 760px) {
+  .team-breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.type-badge {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  /* min-height: 42px; */
+}
+
+.type-badge-icon {
+  display: block;
+  width: 100%;
+  max-width: 70px;
+  height: auto;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+
 
 
 
