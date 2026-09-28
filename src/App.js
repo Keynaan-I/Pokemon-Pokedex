@@ -7,6 +7,71 @@ import TeamBuilderPage from './pages/TeambuilderPage';
 const TEAM_STORAGE_KEY = 'pokemon-team';
 const TEAM_SIZE_STORAGE_KEY = 'pokemon-team-size';
 
+const EXCLUDED_FORM_NAMES = new Set([
+  'pikachu-original-cap',
+  'pikachu-hoenn-cap',
+  'pikachu-sinnoh-cap',
+  'pikachu-unova-cap',
+  'pikachu-kalos-cap',
+  'pikachu-alola-cap',
+  'pikachu-partner-cap',
+  'pikachu-world-cap',
+  'pikachu-rock-star',
+  'pikachu-belle',
+  'pikachu-pop-star',
+  'pikachu-phd',
+  'pikachu-libre',
+  'pikachu-cosplay',
+  'castform-sunny',
+  'castform-rainy',
+  'castform-snowy',
+  'dudunsparce-three-segment',
+  'basculin-blue-striped',
+  'basculin-white-striped',
+  'keldeo-resolute',
+  'aegislash-blade',
+  'magearna-original',
+  'miraidon-drive-mode',
+  'miraidon-aquatic-mode',
+  'miraidon-glide-mode',
+  'miraidon-low-power-mode',
+  'koraidon-limited-build',
+  'koraidon-sprinting-build',
+  'koraidon-swimming-build',
+  'koraidon-gliding-build',
+  'gimmighoul-roaming',
+  'squawkabilly-blue-plumage',
+  'squawkabilly-yellow-plumage',
+  'squawkabilly-white-plumage',
+  'tatsugiri-curly',
+  'tatsugiri-droopy',
+]);
+
+const formatName = (name) => {
+  if (!name) return '';
+  return name
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+};
+
+const shouldExcludeForm = (name) => {
+  if (!name) return false;
+
+  if (EXCLUDED_FORM_NAMES.has(name)) {
+    return true;
+  }
+
+  if (name.startsWith('pikachu-')) return true;
+  if (name.startsWith('castform-')) return true;
+  if (name.startsWith('basculin-') && name !== 'basculin') return true;
+  if (name.startsWith('squawkabilly-') && name !== 'squawkabilly') return true;
+  if (name.includes('gmax')) return true;
+  if (name.includes('totem')) return true;
+
+  return false;
+};
+
 const getSavedTeam = () => {
   try {
     const saved = localStorage.getItem(TEAM_STORAGE_KEY);
@@ -74,7 +139,7 @@ const App = () => {
             if (!speciesUrl) return null;
             return Number(speciesUrl.split('/').filter(Boolean).pop());
           })
-          .filter((id) => id && id > 0 && id < 10000)
+          .filter((id) => id && id > 0 && id < 15000)
           .sort((a, b) => a - b);
 
         const batchSize = 25;
@@ -84,13 +149,50 @@ const App = () => {
           const batch = pokemonIds.slice(i, i + batchSize);
 
           const batchResults = await Promise.allSettled(
-            batch.map((id) => fetchPokemonDetails(id))
+            batch.map(async (speciesId) => {
+              const speciesResponse = await fetch(
+                `https://pokeapi.co/api/v2/pokemon-species/${speciesId}`
+              );
+
+              if (!speciesResponse.ok) {
+                return [];
+              }
+
+              const speciesData = await speciesResponse.json();
+              const varieties = (speciesData.varieties || []).filter(
+                (variety) => !shouldExcludeForm(variety.pokemon.name)
+              );
+
+              if (!varieties.length) {
+                return [await fetchPokemonDetails(speciesId)];
+              }
+
+              const expandedForms = await Promise.allSettled(
+                varieties.map(async (variety) => {
+                  const variantId = Number(
+                    variety.pokemon.url.split('/').filter(Boolean).pop()
+                  );
+
+                  const variant = await fetchPokemonDetails(variantId);
+
+                  return {
+                    ...variant,
+                    id: speciesId,
+                    formLabel: variety.is_default ? 'Default' : formatName(variant.name),
+                  };
+                })
+              );
+
+              return expandedForms
+                .filter((result) => result.status === 'fulfilled')
+                .map((result) => result.value);
+            })
           );
 
           results.push(
-            ...batchResults
-              .filter((result) => result.status === 'fulfilled')
-              .map((result) => result.value)
+            ...batchResults.flatMap((result) =>
+              result.status === 'fulfilled' ? result.value : []
+            )
           );
         }
 

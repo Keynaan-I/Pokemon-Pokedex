@@ -42,7 +42,7 @@ const TeamBuilderPage = ({
   };
   // Main Pokémon list state
   // This holds all loaded Pokémon data from the National Pokédex.
-  const [pokemonList, setPokemonList] = useState([]);
+  const [pokemonList, setPokemonList] = useState(pokemonListFromApp);
 
   // Selected Pokémon state
   // When a Pokémon is clicked from the table, its full details are shown in the panel.
@@ -62,7 +62,12 @@ const TeamBuilderPage = ({
 
   // Standard page loading state
   // Used while the National Dex is being loaded.
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(isLoadingFromApp);
+
+  useEffect(() => {
+    setPokemonList(pokemonListFromApp);
+    setIsLoading(isLoadingFromApp);
+  }, [pokemonListFromApp, isLoadingFromApp]);
 
   // used for searching and filtering
   const [searchTerm, setSearchTerm] = useState('');
@@ -217,8 +222,14 @@ const TeamBuilderPage = ({
   };
 
   // This effect runs once on page load and fetches the full National Pokédex.
-  // Each Pokémon is then individually fetched so the table can display all needed stats.
+  // If the app has already loaded the shared list, reuse it instead of refetching.
   useEffect(() => {
+    if (pokemonListFromApp.length > 0) {
+      setPokemonList(pokemonListFromApp);
+      setIsLoading(false);
+      return undefined;
+    }
+
     let cancelled = false;
 
     const fetchPokemonDetails = async (pokemonId) => {
@@ -331,7 +342,7 @@ const TeamBuilderPage = ({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pokemonListFromApp]);
 
   // Map each type name to its PNG icon.
   // This lets the page show a type badge image instead of plain text.
