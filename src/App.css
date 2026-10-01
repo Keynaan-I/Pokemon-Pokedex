@@ -22,10 +22,12 @@ h2{
 }
 
 .details{
-  display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 200px) minmax(0, 2fr);
+  align-items: start;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
 }
 div {
   margin: 0px;
@@ -37,7 +39,43 @@ div {
   margin-top: 0px;
   position: relative;
   content: center;
-   
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+.detailedSpan-baseStats{
+  border: 5px solid black; 
+  margin: 5px;
+  margin-top: 0px;
+  position: relative;
+  content: center;
+  max-width: 200px;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+.closeDetails,
+.form-loading,
+.form-tabs {
+  grid-column: 1 / -1;
+}
+
+.defensive-stat-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.defensive-stat-table th,
+.defensive-stat-table td {
+  padding: 4px 2px;
+  overflow-wrap: anywhere;
+}
+
+.ability-defense-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 100%;
 }
 .closeDetails{
  margin-top: 0px;
@@ -384,6 +422,22 @@ td:hover {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
+.compact-breakdown-card {
+  align-self: start;
+}
+
+.defensive-ability-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  cursor: pointer;
+}
+
+.defensive-ability-toggle input {
+  accent-color: #c0392b;
+}
+
 .breakdown-table {
   width: 100%;
   border-collapse: collapse;
@@ -398,6 +452,12 @@ td:hover {
   word-break: break-word;
   
 
+}
+.team-breakdown-card.team-resistance-card {
+  width: 100%;
+  max-width: 500px;
+  box-sizing: border-box;
+  margin: 12px auto;
 }
 
 .breakdown-table th {
@@ -437,6 +497,18 @@ td:hover {
 .notable-moves-table td {
   vertical-align: middle;
 }
+
+.notable-moves-scroll {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.notable-moves-table thead th {
+  position: sticky;
+  top: -1px;
+  z-index: 1;
+}
+
 
 .move-pokemon-sprites {
   display: flex;

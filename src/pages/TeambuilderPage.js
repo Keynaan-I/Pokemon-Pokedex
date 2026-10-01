@@ -77,7 +77,8 @@ const TeamBuilderPage = ({
   const [selectedAbilityFilter, setSelectedAbilityFilter] = useState('');
   const [selectedMoveFilter, setSelectedMoveFilter] = useState('');
   const [selectedAbilityForDefense, setSelectedAbilityForDefense] = useState('base');
-  const [selectedMoveCategory, setSelectedMoveCategory] = useState('momentum');
+  const [includeDefensiveAbilities, setIncludeDefensiveAbilities] = useState(false);
+  const [selectedMoveCategory, setSelectedMoveCategory] = useState(null);
   const [isNameDropdownOpen, setIsNameDropdownOpen] = useState(true);
 
   // const pokemonList = pokemonListFromApp;
@@ -469,7 +470,7 @@ const TeamBuilderPage = ({
     'filter': { label: 'Filter', modifiers: { __reducedSuperEffective: 0.75 } },
     'fluffy': { label: 'Fluffy', modifiers: { fire: 2} },
     'solid-rock': { label: 'Solid Rock', modifiers: { __reducedSuperEffective: 0.75 } },
-    'water-bubble': { label: 'Water Bubble', modifiers: { water: 0.5 } },
+    'water-bubble': { label: 'Water Bubble', modifiers: { fire: 0.5 } },
   };
 
   // This function returns the default "Base" tab plus any supported defensive ability tabs.
@@ -520,10 +521,26 @@ const TeamBuilderPage = ({
     }
 
     if (Object.prototype.hasOwnProperty.call(abilityConfig.modifiers, attackingType)) {
-      return abilityConfig.modifiers[attackingType];
+      return baseMatchup * abilityConfig.modifiers[attackingType];
     }
 
     return baseMatchup;
+  };
+
+  const getTeamMatchup = (pokemon, attackingType) => {
+    if (!includeDefensiveAbilities) {
+      return getTypeMatchup(pokemon.types, attackingType);
+    }
+
+    const activeAbility = (pokemon.abilities || [])
+      .map((entry) => entry.ability?.name)
+      .find((abilityName) => DEFENSIVE_ABILITY_EFFECTS[abilityName]);
+
+    return getAbilityAdjustedMatchup(
+      pokemon.types,
+      attackingType,
+      activeAbility || 'base'
+    );
   };
 
   // This updates the defensive table coloring logic to reflect the selected ability.
@@ -735,6 +752,8 @@ const TeamBuilderPage = ({
       'stealth-rock',
       'toxic-spikes',
       'sticky-web',
+      'stone-axe',
+      'ceasless-edge',
     ],
     hazardRemoval: [
       'defog',
@@ -746,28 +765,91 @@ const TeamBuilderPage = ({
       'brick-break',
     ],
     healing: [
-      'recover',
-      'roost',
-      'rest',
-      'moonlight',
-      'synthesis',
-      'wish',
-      'heal-pulse',
+      'Roost',
+      'Slack-Off',
+      'Synthesis',
+      'Recover',
+      'Soft-Boiled',
+      'Moonlight',
+      'Milk-Drink',
+      'Morning-Sun',
+      'Heal-Order',
+      'Shore-Up',
+      'Lunar-Blessing',
+
+      'Aqua-Ring',
+      'Ingrain',
+      'Grassy-Terrain',
+      'Sappy-Seed',
+
+      'Giga-Drain',
+      'Mega-Drain',
+      'Absorb',
+      'Horn-Leech',
+      'Drain-Punch',
+      'Leech-Life',
+      'Bouncy-Bubble',
+      'Draining-Kiss',
+      'Horn-Leech',
+      'Oblivion-Wing',
+      'Parabolic-Charge',
+      'Bitter-Blade',
+      'Matcha-Gotcha',
+          
+      'Heal-Pulse',
+      'Floral-Healing',
+      'Present',
+
+      'Pain-Split',
+      'Swallow',
+      'Wish',
+      'Rest',
+      'Leech-Seed',
+      'Dream-Eater',
+      'Lunar-Dance',
+      'Healing-Wish',
+      'Life-Dew',
+      'Jungle-Healing',
+      'Pollen-Puff',
+      'Purify',
+      'Strength-Sap',
+      'Revival-Blessing',
     ],
     positivePriority: [
-      'quick-attack',
-      'extreme-speed',
-      'aqua-jet',
-      'shadow-sneak',
-      'accelerock',
-      'vacuum-wave',
-      'fake-out',
-      'ice-shard',
-      'water-shuriken',
-      'mach-punch',
-      'sucker-punch',
-      'first-impression',
-      'feint',
+      'Helping-Hand',
+      'Baneful-Bunker',
+      'Burning-Bulwark',
+      'Detect',
+      'Endure',
+      'Kings-Shield',
+      'Obstruct',
+      'Protect',
+      'Spiky-Shield',
+      'Silk-Trap',
+      'Fake-Out',
+      'Quick-Guard',
+      'Upper-Hand',
+      'Wide-Guard',
+      'Ally-Switch',
+      'Extreme-Speed',
+      'Feint',
+      'First-Impression',
+      'Follow-Me',
+      'Rage-Powder',
+      'Accelerock',
+      'Aqua-Jet',
+      'Baby-Doll-Eyes',
+      'Bullet-Punch',
+      'Grassy-Glide',
+      'Ice-Shard',
+      'Jet-Punch',
+      'Mach-Punch',
+      'Quick-Attack',
+      'Shadow-Sneak',
+      'Sucker-Punch',
+      'Thunderclap',
+      'Vacuum-Wave',
+      'Water-Shuriken'
     ],
     setup: [
       'swords-dance',
@@ -799,6 +881,7 @@ const TeamBuilderPage = ({
       'haze',
       'clear-smog',
       'knock-off',
+      'covet',
     ],
   };
 
@@ -837,14 +920,14 @@ const TeamBuilderPage = ({
   const combinedTypeBreakdown = Object.keys(typeImages)
     .map((attackType) => {
       const weakTo = teamMembers.filter(
-        (pokemon) => getTypeMatchup(pokemon.types, attackType) > 1
+        (pokemon) => getTeamMatchup(pokemon, attackType) > 1
       );
       const resistTo = teamMembers.filter((pokemon) => {
-        const matchup = getTypeMatchup(pokemon.types, attackType);
+        const matchup = getTeamMatchup(pokemon, attackType);
         return matchup > 0 && matchup < 1;
       });
       const immuneTo = teamMembers.filter(
-        (pokemon) => getTypeMatchup(pokemon.types, attackType) === 0
+        (pokemon) => getTeamMatchup(pokemon, attackType) === 0
       );
 
       return {
@@ -853,11 +936,7 @@ const TeamBuilderPage = ({
         resistTo,
         immuneTo,
       };
-    })
-    .filter(
-      ({ weakTo, resistTo, immuneTo }) =>
-        weakTo.length || resistTo.length || immuneTo.length
-    );
+    });
 
   const moveCoverageByCategory = Object.entries(TEAM_NOTABLE_MOVES).reduce((acc, [categoryKey, moveNames]) => {
     const normalizedMoveNames = new Set(
@@ -883,18 +962,39 @@ const TeamBuilderPage = ({
     return acc;
   }, {});
 
-  const selectedMoveCoverage = moveCoverageByCategory[selectedMoveCategory] || [];
+  const allMoveCoverage = Array.from(
+    Object.values(moveCoverageByCategory)
+      .flat()
+      .reduce((moves, { moveName, members }) => {
+        const existingMembers = moves.get(moveName) || new Map();
+        members.forEach((pokemon) => existingMembers.set(pokemon.name, pokemon));
+        moves.set(moveName, existingMembers);
+        return moves;
+      }, new Map())
+  )
+    .map(([moveName, members]) => ({ moveName, members: Array.from(members.values()) }))
+    .sort((a, b) => a.moveName.localeCompare(b.moveName));
+
+  const selectedMoveCoverage = selectedMoveCategory
+    ? moveCoverageByCategory[selectedMoveCategory] || []
+    : allMoveCoverage;
 
   // Speed data is displayed with a red-to-green scale so slower mons are darker red
   // and faster mons approach yellow then green as they near 250 speed.
   const speedData = teamMembers.map((pokemon) => {
     const speed = pokemon.stats?.find((stat) => stat.stat.name === 'speed')?.base_stat ?? 0;
     const ratio = Math.min(Math.max(speed / 250, 0), 1);
+    const fillColor = speed < 50
+      ? `hsl(0, 85%, ${18 + (Math.max(speed, 0) / 50) * 30}%)`
+      : speed <= 90
+        ? 'hsl(55, 90%, 50%)'
+        : `hsl(${55 + (Math.min(speed, 250) - 90) / 160 * 65}, 80%, 48%)`;
+
     return {
       pokemonName: pokemon.name,
       speed,
       ratio,
-      fillColor: `hsl(${ratio * 120}, 80%, 48%)`,
+      fillColor,
     };
   });
 
@@ -1051,14 +1151,9 @@ const TeamBuilderPage = ({
         <div className='team-breakdown-section'>
           <h2>Detailed Team Breakdown</h2>
 
-          {teamMembers.length === 0 ? (
-            <p className='team-breakdown-empty'>
-              Add Pokémon to your team to see detailed matchups and stats.
-            </p>
-          ) : (
-            <div className='team-breakdown-grid'>
+          <div className='team-breakdown-grid'>
               {/* Type count summary: how many of each type are represented on the team. */}
-              <div className='team-breakdown-card'>
+              <div className='team-breakdown-card compact-breakdown-card team-type-card'>
                 <h3>Team Type Distribution</h3>
                 <table className='breakdown-table'>
                   <thead>
@@ -1078,45 +1173,10 @@ const TeamBuilderPage = ({
                 </table>
               </div>
 
-              {/* Defensive matchups combine all team members together, showing how many are weak to/resist each type. */}
-              <div className='team-breakdown-card'>
-                <h3>Combined Weaknesses / Resistances</h3>
-                <table className='breakdown-table'>
-                  <thead>
-                    <tr>
-                      <th>Attack Type</th>
-                      <th>Weak</th>
-                      <th>Resist</th>
-                      <th>Immune</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {combinedTypeBreakdown.map(({ attackType, weakTo, resistTo, immuneTo }) => (
-                      <tr key={attackType}>
-                        <td>{renderTypeBadge(attackType)}</td>
-                        <td>
-                          {weakTo.length
-                            ? `${weakTo.length}`
-                            : '0'}
-                        </td>
-                        <td>
-                          {resistTo.length
-                            ? `${resistTo.length}`
-                            : '0'}
-                        </td>
-                        <td>
-                          {immuneTo.length
-                            ? `${immuneTo.length}`
-                            : '0'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              
 
               {/* Competitive move coverage is adjustable via TEAM_NOTABLE_MOVES above. */}
-              <div className='team-breakdown-card'>
+              <div className='team-breakdown-card compact-breakdown-card team-moves-card'>
                 <h3>Notable Competitive Moves</h3>
 
                 <div className='move-category-tabs'>
@@ -1129,7 +1189,12 @@ const TeamBuilderPage = ({
                           ? 'move-category-tab active'
                           : 'move-category-tab'
                       }
-                      onClick={() => setSelectedMoveCategory(categoryKey)}
+                      aria-pressed={selectedMoveCategory === categoryKey}
+                      onClick={() =>
+                        setSelectedMoveCategory((currentCategory) =>
+                          currentCategory === categoryKey ? null : categoryKey
+                        )
+                      }
                     >
                       {categoryKey
                         .replace(/([A-Z])/g, ' $1')
@@ -1138,47 +1203,48 @@ const TeamBuilderPage = ({
                   ))}
                 </div>
 
-                <table className='breakdown-table notable-moves-table'>
-                  <thead>
-                    <tr>
-                      <th>Move</th>
-                      <th>Pokémon</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedMoveCoverage.length > 0 ? (
-                      selectedMoveCoverage.map(({ moveName, members }) => (
-                        <tr key={moveName}>
-                          <td>{Capitalize(moveName.replace('-', ' '))}</td>
-                          <td className='move-pokemon-sprites'>
-                            {members.map((pokemon) => (
-                              <button
-                                key={`${moveName}-${pokemon.name}`}
-                                type='button'
-                                className='move-pokemon-sprite'
-                                title={Capitalize(pokemon.name)}
-                                aria-label={Capitalize(pokemon.name)}
-                              >
-                                <img
-                                  src={pokemon.sprites?.front_default || pokemon.sprites?.other?.['official-artwork']?.front_default}
-                                  alt={pokemon.name}
-                                />
-                              </button>
-                            ))}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
+                <div className='notable-moves-scroll'>
+                  <table className='breakdown-table notable-moves-table'>
+                    <thead>
                       <tr>
-                        <td colSpan="2">No notable moves found in this category.</td>
+                        <th>Move</th>
+                        <th>Pokémon</th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {selectedMoveCoverage.length > 0 ? (
+                        selectedMoveCoverage.map(({ moveName, members }) => (
+                          <tr key={moveName}>
+                            <td>{Capitalize(moveName.replace('-', ' '))}</td>
+                            <td className='move-pokemon-sprites'>
+                              {members.map((pokemon) => (
+                                <button
+                                  key={`${moveName}-${pokemon.name}`}
+                                  type='button'
+                                  className='move-pokemon-sprite'
+                                  title={Capitalize(pokemon.name)}
+                                  aria-label={Capitalize(pokemon.name)}
+                                >
+                                  <img
+                                    src={pokemon.sprites?.front_default || pokemon.sprites?.other?.['official-artwork']?.front_default}
+                                    alt={pokemon.name}
+                                  />
+                                </button>
+                              ))}
+                            </td>
+                          </tr>
+                        ))
+                      ) : teamMembers.length > 0 ? (
+                        <tr>
+                          <td colSpan="2">No notable moves found in this category.</td>
+                        </tr>
+                      ) : null}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-
               {/* Speed bar: darker red = slower, yellow/green = faster. */}
-              <div className='team-breakdown-card'>
+              <div className='team-breakdown-card compact-breakdown-card team-speed-card'>
                 <h3>Speed Comparison</h3>
                 <table className='breakdown-table'>
                   <thead>
@@ -1199,7 +1265,7 @@ const TeamBuilderPage = ({
                                 className='speed-bar-fill'
                                 style={{
                                   width: `${Math.max(6, ratio * 100)}%`,
-                                  background: `linear-gradient(90deg, rgb(255, 30, 30), ${fillColor})`,
+                                  background: fillColor,
                                 }}
                               />
                             </div>
@@ -1210,8 +1276,65 @@ const TeamBuilderPage = ({
                   </tbody>
                 </table>
               </div>
-            </div>
-          )}
+          </div>
+          
+          
+          {/* Defensive matchups combine all team members together, showing how many are weak to/resist each type. */}
+              <div className='team-breakdown-card team-resistance-card'>
+                <h3>Combined Weaknesses / Resistances</h3>
+                <label className='defensive-ability-toggle'>
+                  <input
+                    type='checkbox'
+                    checked={includeDefensiveAbilities}
+                    onChange={(event) => setIncludeDefensiveAbilities(event.target.checked)}
+                  />
+                  Include defensive abilities
+                </label>
+                <table className='breakdown-table'>
+                  <thead>
+                    <tr>
+                      <th>Attack Type</th>
+                      <th>Weak</th>
+                      <th>Resist</th>
+                      <th>Immune</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {combinedTypeBreakdown.map(({ attackType, weakTo, resistTo, immuneTo }) => (
+                      <tr key={attackType}>
+                        <td>{renderTypeBadge(attackType)}</td>
+                        <td
+                          style={{
+                            backgroundColor: weakTo.length
+                              ? `rgba(220, 53, 69, ${Math.min(weakTo.length * 0.1, 0.36)})`
+                              : undefined,
+                          }}
+                        >
+                          {weakTo.length
+                            ? `${weakTo.length}`
+                            : '0'}
+                        </td>
+                        <td
+                          style={{
+                            backgroundColor: resistTo.length
+                              ? `rgba(40, 167, 69, ${Math.min(resistTo.length * 0.1, 0.36)})`
+                              : undefined,
+                          }}
+                        >
+                          {resistTo.length
+                            ? `${resistTo.length}`
+                            : '0'}
+                        </td>
+                        <td>
+                          {immuneTo.length
+                            ? `${immuneTo.length}`
+                            : '0'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
         </div>
       </body>
     </div>

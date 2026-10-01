@@ -138,6 +138,7 @@ const PokedexPage = ({
 
         setFormVariants(validForms);
         setSelectedForm(defaultForm);
+        setSelectedAbilityForDefense(getDefaultDefenseAbility(defaultForm));
         return;
       }
     } catch (error) {
@@ -362,12 +363,24 @@ const PokedexPage = ({
     'filter': { label: 'Filter', modifiers: { __reducedSuperEffective: 0.75 } },
     'fluffy': { label: 'Fluffy', modifiers: { fire: 2} },
     'solid-rock': { label: 'Solid Rock', modifiers: { __reducedSuperEffective: 0.75 } },
-    'water-bubble': { label: 'Water Bubble', modifiers: { water: 0.5 } },
+    'water-bubble': { label: 'Water Bubble', modifiers: { fire: 0.5 } },
   };
 
-  // This function returns the default "Base" tab plus any supported defensive ability tabs.
-  // This ensures the defensive table can show either normal matchups or an ability-adjusted matchup.
+  const getDefaultDefenseAbility = (pokemon) => {
+    if (pokemon?.abilities?.length !== 1) {
+      return 'base';
+    }
+
+    const abilityName = pokemon.abilities[0]?.ability?.name;
+    return DEFENSIVE_ABILITY_EFFECTS[abilityName] ? abilityName : 'base';
+  };
+
+  // A sole defensive ability is applied automatically, so it needs no selector tab.
   const getAbilityDefenseTabs = (pokemon) => {
+    if (getDefaultDefenseAbility(pokemon) !== 'base') {
+      return [];
+    }
+
     const tabs = [{ id: 'base', label: 'Other abilities' }];
 
     if (!pokemon?.abilities?.length) {
@@ -413,7 +426,7 @@ const PokedexPage = ({
     }
 
     if (Object.prototype.hasOwnProperty.call(abilityConfig.modifiers, attackingType)) {
-      return abilityConfig.modifiers[attackingType];
+      return baseMatchup * abilityConfig.modifiers[attackingType];
     }
 
     return baseMatchup;
@@ -439,12 +452,12 @@ const PokedexPage = ({
     }
   };
 
-  // When a Pokémon is clicked, reset the defensive ability tabs to the default "Base" view.
+  // When a Pokémon is clicked, select its sole defensive ability automatically when applicable.
   const handlePokemonClick = async (pokemon) => {
     setSelectedPokemon(pokemon);
     setSelectedForm(null);
     setFormVariants([]);
-    setSelectedAbilityForDefense('base');
+    setSelectedAbilityForDefense(getDefaultDefenseAbility(pokemon));
     setIsFormLoading(true);
 
     try {
@@ -562,7 +575,6 @@ const PokedexPage = ({
 
             {/* Render alternate form tabs if the Pokémon has more than one form. */}
             {isFormLoading && <div className='form-loading'>Loading forms...</div>}
-
             {formVariants.length > 0 && (
               <div className='form-tabs'>
                 {formVariants.map((form) => (
@@ -572,7 +584,7 @@ const PokedexPage = ({
                     className={selectedForm?.name === form.name ? 'active-form-tab' : 'form-tab'}
                     onClick={() => {
                       setSelectedForm(form);
-                      setSelectedAbilityForDefense('base');
+                      setSelectedAbilityForDefense(getDefaultDefenseAbility(form));
                     }}
                   >
                     {form.formLabel || formatName(form.name)}
@@ -580,7 +592,6 @@ const PokedexPage = ({
                 ))}
               </div>
             )}
-
             <span className='detailedSpan'>
               <h2>Pokemon</h2>
               Pokedex #{currentPokemon.id}
@@ -605,7 +616,7 @@ const PokedexPage = ({
               ))}
             </span>
 
-            <span className='detailedSpan'>
+            <span className='detailedSpan-baseStats'>
               <h2>Base Stats</h2>
               <h3>HP</h3>
               {currentPokemon.stats[0].base_stat}
@@ -758,6 +769,8 @@ const PokedexPage = ({
               <br></br>
               More information like moveset or in-game location<br></br> of this pokemon can be found <a href={"https://pokemondb.net/pokedex/" + currentPokemon.name} target="_blank" rel="noreferrer"> here</a>
             </span>
+
+                        
           </div>
         ) : (
           // This is the page with all the Pokémon (initial page) ----------------------------------
