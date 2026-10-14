@@ -245,9 +245,27 @@ const App = () => {
       <header>
         <h1>Key's Pokemon hub </h1>
         <nav className="nav-buttons">
-          <button className="nav-button" onClick={() => setCurrentPage('home')}>Home Page</button>
-          <button className="nav-button" onClick={() => setCurrentPage('pokedex')}>Pokedex</button>
-          <button className="nav-button" onClick={() => setCurrentPage('teambuilder')}>Team Builder</button>
+          <button
+            className="nav-button"
+            aria-current={currentPage === 'home' ? 'page' : undefined}
+            onClick={() => setCurrentPage('home')}
+          >
+            Home Page
+          </button>
+          <button
+            className="nav-button"
+            aria-current={currentPage === 'pokedex' ? 'page' : undefined}
+            onClick={() => setCurrentPage('pokedex')}
+          >
+            Pokedex
+          </button>
+          <button
+            className="nav-button"
+            aria-current={currentPage === 'teambuilder' ? 'page' : undefined}
+            onClick={() => setCurrentPage('teambuilder')}
+          >
+            Team Builder
+          </button>
         </nav>
       </header>
 
